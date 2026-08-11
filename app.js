@@ -293,7 +293,8 @@
     var paper = $('paper');
     // 手机端预览默认收起（display:none），截图前临时移到屏外显示，截完还原
     var prev = paper.getAttribute('style') || '';
-    paper.style.cssText += ';display:block !important;position:absolute;left:-9999px;top:0;z-index:-1;';
+    // 固定桌面宽度渲染，不受手机横竖屏影响，保证导出效果恒定
+    paper.style.cssText += ';display:block !important;position:absolute;left:-9999px;top:0;z-index:-1;width:794px !important;max-width:none !important;';
     html2canvas(paper, { scale: 2, backgroundColor: '#ffffff' }).then(function (canvas) {
       paper.setAttribute('style', prev);
       canvas.toBlob(function (blob) {
