@@ -2,6 +2,9 @@
 (function () {
   'use strict';
 
+  // docxtemplater 浏览器版暴露的全局是小写 window.docxtemplater，这里统一别名
+  var Docxtemplater = window.Docxtemplater || window.docxtemplater;
+
   var DEFAULT_R1 = '此价格含税、含运费（广州从化鳌头镇星业路123号）。';
   var DEFAULT_R3 = '其他约定事项：含托板。未尽事宜，双方友好协商解决。';
   var DEFAULT_SELLER = '广州明毅洗涤用品有限公司';
@@ -288,10 +291,17 @@
   /* ---------- 导出截图 ---------- */
   function exportPng() {
     var paper = $('paper');
+    // 手机端预览默认收起（display:none），截图前临时移到屏外显示，截完还原
+    var prev = paper.getAttribute('style') || '';
+    paper.style.cssText += ';display:block !important;position:absolute;left:-9999px;top:0;z-index:-1;';
     html2canvas(paper, { scale: 2, backgroundColor: '#ffffff' }).then(function (canvas) {
+      paper.setAttribute('style', prev);
       canvas.toBlob(function (blob) {
         downloadBlob(blob, '明毅洗涤剂报价单-' + fileDateStr() + '.png');
       }, 'image/png');
+    }).catch(function (e) {
+      paper.setAttribute('style', prev);
+      alert('截图失败：' + (e && e.message ? e.message : e));
     });
   }
 
