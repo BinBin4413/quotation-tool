@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>明毅洗涤剂报价单生成器</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Microsoft YaHei", sans-serif; background: #f0f2f5; color: #222; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; flex-wrap: wrap; }
+  .panel { background: #fff; border-radius: 10px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .form-panel { flex: 1 1 380px; min-width: 340px; }
+  .preview-panel { flex: 1 1 560px; min-width: 340px; }
+  h1 { font-size: 18px; margin-bottom: 14px; }
+  h2 { font-size: 14px; color: #666; margin: 16px 0 8px; border-left: 3px solid #2b6cb0; padding-left: 8px; }
+  label { font-size: 13px; color: #444; display: block; margin-bottom: 4px; }
+  input[type=text], input[type=number], input[type=date], textarea {
+    width: 100%; padding: 7px 9px; border: 1px solid #d0d5dd; border-radius: 6px; font-size: 14px; font-family: inherit;
+  }
+  input:focus, textarea:focus { outline: 2px solid #2b6cb033; border-color: #2b6cb0; }
+  .row2 { display: flex; gap: 10px; }
+  .row2 > div { flex: 1; margin-bottom: 10px; }
+  .mb { margin-bottom: 10px; }
+  table.items { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.items th { background: #f7f9fc; padding: 6px 4px; border: 1px solid #e3e8ef; font-weight: 600; }
+  table.items td { border: 1px solid #e3e8ef; padding: 3px; }
+  table.items input { width: 100%; border: none; padding: 5px 4px; font-size: 13px; background: transparent; }
+  table.items input:focus { outline: none; background: #eef4fb; }
+  table.items .amt { text-align: right; padding-right: 8px; white-space: nowrap; }
+  .btn { border: none; border-radius: 6px; padding: 9px 16px; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .btn-primary { background: #2b6cb0; color: #fff; }
+  .btn-primary:hover { background: #245a94; }
+  .btn-ghost { background: #eef2f7; color: #2b6cb0; }
+  .btn-ghost:hover { background: #dde6f0; }
+  .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+  .total-line { margin-top: 10px; font-size: 14px; text-align: right; }
+  .total-line b { font-size: 17px; color: #c0392b; }
+  .cn-line { margin-top: 4px; font-size: 13px; color: #666; text-align: right; }
+  .del-row { color: #c0392b; cursor: pointer; text-align: center; font-size: 16px; line-height: 1; }
+  /* ===== Word 预览区（仿 docx 样式） ===== */
+  .paper { background: #fff; width: 794px; max-width: 100%; margin: 0 auto; padding: 60px 70px; font-family: SimSun, "宋体", serif; color: #000; overflow: hidden; }
+  .paper h3 { text-align: center; font-size: 22px; letter-spacing: 6px; margin-bottom: 30px; font-family: SimSun, "宋体", serif; }
+  .paper .buyer { font-size: 14px; margin-bottom: 6px; }
+  .paper table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  .paper td, .paper th { border: 1px solid #000; font-size: 14px; padding: 5px 6px; text-align: center; font-family: SimSun, "宋体", serif; }
+  .paper th:first-child { text-align: left; }
+  .paper .total-table { margin-top: -1px; }
+  .paper .total-table td:first-child { width: 18%; }
+  .paper .total-table td:last-child { text-align: left; }
+  .paper .remarks { margin-top: 14px; font-size: 14px; line-height: 1.9; }
+  .paper .footer { margin-top: 50px; text-align: right; font-size: 14px; line-height: 2.2; padding-right: 30px; }
+  .hint { font-size: 12px; color: #999; margin-top: 10px; }
+  /* 手机端：预览默认收起 */
+  #togglePreview { display: none; width: 100%; }
+  @media (max-width: 900px) {
+    #togglePreview { display: block; margin-bottom: 10px; }
+    .preview-panel .paper { display: none; }
+    .preview-panel.open .paper { display: block; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <!-- 表单区 -->
+  <div class="panel form-panel">
+    <h1>报价单生成器</h1>
+
+    <h2>报价单位</h2>
+    <div class="mb">
+      <label>报价单位（我司，与落款公司一致）</label>
+      <input type="text" id="company" list="companyList" placeholder="XXXXXX有限公司">
+      <datalist id="companyList"></datalist>
+    </div>
+    <div class="row2">
+      <div>
+        <label>报价时效（起）</label>
+        <input type="date" id="d1">
+      </div>
+      <div>
+        <label>报价时效（止）</label>
+        <input type="date" id="d2">
+      </div>
+    </div>
+
+    <h2>产品明细</h2>
+    <table class="items">
+      <thead>
+        <tr><th style="width:34px">序号</th><th>产品</th><th style="width:56px">单位</th><th style="width:70px">数量</th><th style="width:90px">单价（元）</th><th style="width:96px">合计（元）</th><th style="width:80px">备注</th><th style="width:28px"></th></tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <div style="margin-top:8px"><button class="btn btn-ghost" id="addRow">+ 添加一行</button></div>
+    <div class="total-line">合计：<b id="totalNum">0.00</b> 元</div>
+    <div class="cn-line" id="totalCn">零元整</div>
+
+    <h2>备注条款</h2>
+    <div class="mb">
+      <label>条款一</label>
+      <input type="text" id="r1">
+    </div>
+    <div class="mb">
+      <label>条款二（其他约定事项）</label>
+      <input type="text" id="r3">
+    </div>
+    <div class="hint">报价时效一行由上方日期自动生成：报价自 X/X/X 至 X/X/X 有效。</div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="exportDocx">导出 Word（.docx）</button>
+      <button class="btn btn-ghost" id="exportPng">导出截图（.png）</button>
+      <button class="btn btn-ghost" id="resetAll">清空产品</button>
+    </div>
+  </div>
+
+  <!-- 预览区 -->
+  <div class="panel preview-panel" id="previewPanel">
+    <h2 style="margin-top:0">实时预览</h2>
+    <button class="btn btn-ghost" id="togglePreview">展开预览 ▾</button>
+    <div class="paper" id="paper">
+      <h3>报价单</h3>
+      <div><span class="buyer">报价单位：<span id="pv-buyer"></span></span></div>
+      <table>
+        <thead>
+          <tr><th>序号</th><th>产品</th><th>单位</th><th>数量</th><th>单价（元）</th><th>合计（元）</th><th>备注</th></tr>
+        </thead>
+        <tbody id="pv-tbody"></tbody>
+      </table>
+      <table class="total-table">
+        <tr><td>合计（元）</td><td id="pv-total"></td></tr>
+      </table>
+      <div class="remarks">
+        <div>备注：</div>
+        <div id="pv-r1"></div>
+        <div id="pv-dates"></div>
+        <div id="pv-r3"></div>
+      </div>
+      <div class="footer">
+        <div id="pv-seller"></div>
+        <div id="pv-date"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="pizzip.min.js"></script>
+<script src="docxtemplater.js"></script>
+<script src="html2canvas.min.js"></script>
+<script src="template.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
